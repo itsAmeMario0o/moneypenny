@@ -1,0 +1,7 @@
+.env
+node_modules/
+dist/
+__pycache__/
+
+# Machine-specific certificates (see api/certs/README.md)
+api/certs/*.crt

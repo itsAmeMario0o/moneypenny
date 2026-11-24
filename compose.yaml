@@ -1,0 +1,31 @@
+name: moneypenny
+
+services:
+  api:
+    build: ./api
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - data:/data                 # Docker volume, outside OneDrive (SQLite + TradingAgents cache)
+    ports: ["127.0.0.1:8000:8000"] # localhost only; Claude Code + TradingView MCP on the Mac call this
+
+  web:
+    build: ./web
+    restart: unless-stopped
+    depends_on: [api, journal]
+    ports: ["127.0.0.1:5173:80"]
+
+  # LuxAlgo trade journal (MIT). Built from their source, pinned to one commit so an
+  # upstream change cannot break us. To update: change the commit id and rebuild.
+  journal:
+    build: https://github.com/LuxAlgo/trade-journal.git#834e7b68f553d1aba0d7777875cdc4622f5a7eb5
+    restart: unless-stopped
+    environment:
+      JOURNAL_DATA_DIR: /data
+    volumes:
+      - journal_data:/data         # its own SQLite file, separate from Moneypenny's
+    ports: ["127.0.0.1:3000:3000"] # localhost only, so no password is set
+
+volumes:
+  data:
+  journal_data:
